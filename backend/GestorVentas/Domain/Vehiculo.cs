@@ -15,7 +15,7 @@ public class Vehiculo
     [StringLength(50)]
     public required string Modelo { get; set; }
 
-    public string? Tipo { get; set; }
+    public Tipo Tipo { get; set; }
 
     public int? Año { get; set; }
 
