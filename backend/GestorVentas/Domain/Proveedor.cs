@@ -12,7 +12,7 @@ public class Proveedor
     [StringLength(50)]
     public required string Nombre { get; set; }
 
-    public int CUIT {  get; set; }
+    public required int CUIT {  get; set; }
 
     [StringLength(50)]
     public required string Direccion { get; set; }

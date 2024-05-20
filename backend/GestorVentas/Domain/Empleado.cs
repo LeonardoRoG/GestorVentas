@@ -29,8 +29,12 @@ public class Empleado
 
     public required decimal Sueldo { get; set; }
 
-    [ForeignKey("IdEmpleado")]
-    public Empleado? RespondeA {  get; set; }
+    [ForeignKey("Jefe")]
+    public int? IdJefe {  get; set; }
+
+    public Empleado? Jefe { get; set; }
+
+    public List<Empleado>? Subordinados { get; set; } = [];
 
     [ForeignKey("IdVehiculo")]
     public Vehiculo? Vehiculo { get; set; }
