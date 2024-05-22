@@ -23,3 +23,8 @@ public class CategoriaResponseDto
     public string? Descripcion { get; set; }
 }
 
+public class CategoriaProductoRequestDto
+{
+    public int IdCategoria { get; set; }
+}
+

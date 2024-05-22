@@ -28,3 +28,8 @@ public class ProveedorResponseDto
     public required string Ciudad {  get; set; }
     public int Telefono { get; set; }
 }
+
+public class ProveedorProductoRequestDto
+{
+    public int IdProveedor {  get; set; }
+}

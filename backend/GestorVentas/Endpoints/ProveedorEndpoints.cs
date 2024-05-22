@@ -1,5 +1,4 @@
 ﻿using Carter;
-using GestorVentas.Domain;
 using GestorVentas.Endpoints.DTO;
 using GestorVentas.Service;
 using Microsoft.AspNetCore.Mvc;

@@ -10,6 +10,12 @@ public class Vehiculo
     public int IdVehiculo {  get; set; }
 
     [StringLength(50)]
+    public required string Nombre { get; set; }
+
+    [StringLength(16)]
+    public required string Matricula { get; set; }
+
+    [StringLength(50)]
     public required string Marca { get; set; }
 
     [StringLength(50)]
