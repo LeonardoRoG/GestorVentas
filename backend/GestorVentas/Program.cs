@@ -27,6 +27,12 @@ builder.Services.AddScoped<IProveedorService, ProveedorService>();
 builder.Services.AddTransient<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
+builder.Services.AddTransient<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+
+builder.Services.AddTransient<IVehiculoRepository, VehiculoRepository>();
+builder.Services.AddScoped<IVehiculoService, VehiculoService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
