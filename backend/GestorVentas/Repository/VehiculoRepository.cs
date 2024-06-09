@@ -2,13 +2,14 @@
 using GestorVentas.Domain;
 using GestorVentas.Endpoints.DTO;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestorVentas.Repository;
 
 public interface IVehiculoRepository
 {
-    List<VehiculoDto> GetAllVehiculos();
-    VehiculoDto GetVehiculo(int idVehiculo);
+    Task<List<VehiculoDto>> GetAllVehiculos();
+    Task<VehiculoDto> GetVehiculo(int idVehiculo);
     void AddVehiculo(VehiculoDto vehiculoDto);
     void RemoveVehiculo(int idVehiculo);
     void UpdateVehiculo(int idVehiculo, VehiculoDto vehiculoDto);
@@ -16,7 +17,7 @@ public interface IVehiculoRepository
 
 public class VehiculoRepository(AppDbContext context) : IVehiculoRepository
 {
-    public void AddVehiculo(VehiculoDto vehiculoDto)
+    public async void AddVehiculo(VehiculoDto vehiculoDto)
     {
         Vehiculo vehiculoNuevo = new()
         {
@@ -30,34 +31,34 @@ public class VehiculoRepository(AppDbContext context) : IVehiculoRepository
             Litros = vehiculoDto.Litros
         };
         context.Add(vehiculoNuevo);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public List<VehiculoDto> GetAllVehiculos()
+    public async Task<List<VehiculoDto>> GetAllVehiculos()
     {
-        var vehiculos = context.Vehiculos.ToList();
+        var vehiculos = await context.Vehiculos.ToListAsync();
         return vehiculos.Adapt<List<VehiculoDto>>();
     }
 
-    public VehiculoDto GetVehiculo(int idVehiculo)
+    public async Task<VehiculoDto> GetVehiculo(int idVehiculo)
     {
-        var vehiculo = context.Vehiculos.FirstOrDefault(x => x.IdVehiculo == idVehiculo);
+        var vehiculo = await context.Vehiculos.FirstOrDefaultAsync(x => x.IdVehiculo == idVehiculo);
         return vehiculo.Adapt<VehiculoDto>();
     }
 
-    public void RemoveVehiculo(int idVehiculo)
+    public async void RemoveVehiculo(int idVehiculo)
     {
-        var vehiculo = context.Vehiculos.FirstOrDefault(x => x.IdVehiculo == idVehiculo);
+        var vehiculo = await context.Vehiculos.FirstOrDefaultAsync(x => x.IdVehiculo == idVehiculo);
         if (vehiculo == null)
             throw new Exception($"El vehiculo con id {idVehiculo} no existe.");
 
         context.Vehiculos.Remove(vehiculo);
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 
-    public void UpdateVehiculo(int idVehiculo, VehiculoDto vehiculoDto)
+    public async void UpdateVehiculo(int idVehiculo, VehiculoDto vehiculoDto)
     {
-        var vehiculo = context.Vehiculos.FirstOrDefault(x => x.IdVehiculo == idVehiculo);
+        var vehiculo = await context.Vehiculos.FirstOrDefaultAsync(x => x.IdVehiculo == idVehiculo);
         if (vehiculo == null) throw new Exception($"El vehiculo con id {idVehiculo} no existe");
 
         vehiculo.Nombre = vehiculoDto.Nombre;
@@ -69,6 +70,6 @@ public class VehiculoRepository(AppDbContext context) : IVehiculoRepository
         vehiculo.Combustible = vehiculoDto.Combustible;
         vehiculo.Litros = vehiculoDto.Litros;
 
-        context.SaveChanges();
+        await context.SaveChangesAsync();
     }
 }

@@ -8,8 +8,8 @@ namespace GestorVentas.Repository;
 
 public interface IProductoRepository
 {
-    List<ProductoDto> GetAllProductos();
-    ProductoDto GetProducto(int idProducto);
+    Task<List<ProductoDto>> GetAllProductos();
+    Task<ProductoDto> GetProducto(int idProducto);
     void AddProducto(ProductoDto productoDto);
     void RemoveProducto(int idProducto);
     void UpdateProducto(int idProducto, ProductoDto productoDto);
@@ -17,76 +17,91 @@ public interface IProductoRepository
 
 public class ProductoRepository(AppDbContext context) : IProductoRepository
 {
-    public void AddProducto(ProductoDto productoDto)
+    public async void AddProducto(ProductoDto productoDto)
     {
-        var categoria = context.Categorias.FirstOrDefault(x => x.IdCategoria == productoDto.Categoria.IdCategoria);
-        var proveedor = context.Proveedores.FirstOrDefault(x => x.IdProveedor == productoDto.Proveedor.IdProveedor);
-        
-        Producto productoNuevo = new()
+        try
         {
-            Nombre = productoDto.Nombre,
-            Descripcion = productoDto.Descripcion,
-            UrlImagen = productoDto.UrlImagen,
-            Stock = productoDto.Stock,
-            Precio = productoDto.Precio,
-            Discontinuado = false,
-            Categoria = categoria!,
-            Proveedor = proveedor!
-        };
+            var categoria = await context.Categorias.FirstOrDefaultAsync(x => x.IdCategoria == productoDto.Categoria.IdCategoria);
+            var proveedor = await context.Proveedores.FirstOrDefaultAsync(x => x.IdProveedor == productoDto.Proveedor.IdProveedor);
+        
+            Producto productoNuevo = new()
+            {
+                Nombre = productoDto.Nombre,
+                Descripcion = productoDto.Descripcion,
+                UrlImagen = productoDto.UrlImagen,
+                Stock = productoDto.Stock,
+                Precio = productoDto.Precio,
+                Discontinuado = false,
+                Categoria = categoria!,
+                Proveedor = proveedor!
+            };
 
-        context.Add(productoNuevo);
-        context.SaveChanges();
+            context.Add(productoNuevo);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error al agregar el producto.", ex);
+        }
     }
 
-    public List<ProductoDto> GetAllProductos()
+    public async Task<List<ProductoDto>> GetAllProductos()
     {
-        var productos = context.Productos
+        var productos = await context.Productos
                             .Include(x => x.Proveedor)
                             .Include(x => x.Categoria)
-                            .ToList();
+                            .ToListAsync();
 
         return productos.Adapt<List<ProductoDto>>();
     }
 
-    public ProductoDto GetProducto(int idProducto)
+    public async Task<ProductoDto> GetProducto(int idProducto)
     {
-        var producto = context.Productos.Where(x => x.IdProducto == idProducto)
+        var producto = await context.Productos.Where(x => x.IdProducto == idProducto)
                                      .Include(x => x.Proveedor)
                                      .Include(x => x.Categoria)
-                                     .FirstOrDefault();
+                                     .FirstOrDefaultAsync();
 
         return producto.Adapt<ProductoDto>();
     }
 
-    public void RemoveProducto(int idProducto)
+    public async void RemoveProducto(int idProducto)
     {
-        var producto = context.Productos.FirstOrDefault(x => x.IdProducto == idProducto);
-        if (producto == null)
-            throw new Exception($"El producto con id {idProducto} no existe.");
-
-        context.Productos.Remove(producto);
-        context.SaveChanges();
+        try
+        {
+            var producto = await context.Productos.FirstOrDefaultAsync(x => x.IdProducto == idProducto) ?? throw new Exception($"El producto con id {idProducto} no existe.");
+            context.Productos.Remove(producto);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error al remover el producto.", ex);
+        }
     }
 
-    public void UpdateProducto(int idProducto, ProductoDto productoDto)
+    public async void UpdateProducto(int idProducto, ProductoDto productoDto)
     {
-        var producto = context.Productos.FirstOrDefault(x => x.IdProducto == idProducto);
-        if (producto == null)
-            throw new Exception($"El producto con id {idProducto} no existe.");
-        
-        var categoria = context.Categorias.FirstOrDefault(x => x.IdCategoria == productoDto.Categoria.IdCategoria);
-        var proveedor = context.Proveedores.FirstOrDefault(x => x.IdProveedor == productoDto.Proveedor.IdProveedor);
+        try
+        {
+            var producto = await context.Productos.FirstOrDefaultAsync(x => x.IdProducto == idProducto) ?? throw new Exception($"El producto con id {idProducto} no existe.");
+            var categoria = await context.Categorias.FirstOrDefaultAsync(x => x.IdCategoria == productoDto.Categoria.IdCategoria);
+            var proveedor = await context.Proveedores.FirstOrDefaultAsync(x => x.IdProveedor == productoDto.Proveedor.IdProveedor);
 
-        producto.Nombre = productoDto.Nombre;
-        producto.Descripcion = productoDto.Descripcion;
-        producto.UrlImagen = productoDto.UrlImagen;
-        producto.Stock = productoDto.Stock;
-        producto.Precio = productoDto.Precio;
-        producto.Discontinuado = false;
-        producto.Categoria = categoria!;
-        producto.Proveedor = proveedor!;
+            producto.Nombre = productoDto.Nombre;
+            producto.Descripcion = productoDto.Descripcion;
+            producto.UrlImagen = productoDto.UrlImagen;
+            producto.Stock = productoDto.Stock;
+            producto.Precio = productoDto.Precio;
+            producto.Discontinuado = false;
+            producto.Categoria = categoria!;
+            producto.Proveedor = proveedor!;
 
-        context.SaveChanges();
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex) 
+        {
+            throw new Exception("Error al actualizar el producto.", ex);
+        }
 
         //// Otra forma de ejecutar un update
         //var rowsAffected = context.Productos.Where(x => x.IdProducto == idProducto)

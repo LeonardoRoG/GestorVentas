@@ -2,6 +2,7 @@
 using GestorVentas.Domain;
 using GestorVentas.Endpoints.DTO;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace GestorVentas.Repository;
 
@@ -10,61 +11,76 @@ public interface IProveedorRepository
     void AddProveedor(ProveedorDto proveedorDto);
     void RemoveProveedor(int idProveedor);
     void UpdateProveedor(int idProveedor, ProveedorDto proveedorDto);
-    List<ProveedorDto> GetAllProveedors();
-    ProveedorDto GetProveedor(int idProveedor);
+    Task<List<ProveedorDto>> GetAllProveedors();
+    Task<ProveedorDto> GetProveedor(int idProveedor);
 }
 
 public class ProveedorRepository(AppDbContext context) : IProveedorRepository
 {
-    public void AddProveedor(ProveedorDto proveedorDto)
+    public async void AddProveedor(ProveedorDto proveedorDto)
     {
-        Proveedor proveedorNuevo = new()
+        try
         {
-            Nombre = proveedorDto.Nombre,
-            CUIT = proveedorDto.CUIT,
-            Direccion = proveedorDto.Direccion,
-            Ciudad = proveedorDto.Ciudad,
-            Telefono = proveedorDto.Telefono
-        };
+            Proveedor proveedorNuevo = new()
+            {
+                Nombre = proveedorDto.Nombre,
+                CUIT = proveedorDto.CUIT,
+                Direccion = proveedorDto.Direccion,
+                Ciudad = proveedorDto.Ciudad,
+                Telefono = proveedorDto.Telefono
+            };
 
-        context.Add(proveedorNuevo);
-        context.SaveChanges();
+            context.Add(proveedorNuevo);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error al agregar el proveedor.", ex);
+        }
     }
 
-    public List<ProveedorDto> GetAllProveedors()
+    public async Task<List<ProveedorDto>> GetAllProveedors()
     {
-        var proveedores = context.Proveedores.ToList();
+        var proveedores = await context.Proveedores.ToListAsync();
         return proveedores.Adapt<List<ProveedorDto>>();
     }
 
-    public ProveedorDto GetProveedor(int idProveedor)
+    public async Task<ProveedorDto> GetProveedor(int idProveedor)
     {
-        var proveedor = context.Proveedores.Where(x => x.IdProveedor == idProveedor).SingleOrDefault();
+        var proveedor = await context.Proveedores.Where(x => x.IdProveedor == idProveedor).SingleOrDefaultAsync();
         return proveedor.Adapt<ProveedorDto>();
     }
 
-    public void RemoveProveedor(int idProveedor)
+    public async void RemoveProveedor(int idProveedor)
     {
-        var proveedor = context.Proveedores.FirstOrDefault(x => x.IdProveedor == idProveedor);
-        if (proveedor == null)
-            throw new Exception($"El proveedor con id {idProveedor} no existe.");
-
-        context.Proveedores.Remove(proveedor);
-        context.SaveChanges();
+        try
+        {
+            var proveedor = await context.Proveedores.FirstOrDefaultAsync(x => x.IdProveedor == idProveedor) ?? throw new Exception($"El proveedor con id {idProveedor} no existe.");
+            context.Proveedores.Remove(proveedor);
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error al eliminar el proveedor", ex);
+        }
     }
 
-    public void UpdateProveedor(int idProveedor, ProveedorDto proveedorDto)
+    public async void UpdateProveedor(int idProveedor, ProveedorDto proveedorDto)
     {
-        var proveedor = context.Proveedores.SingleOrDefault(x => x.IdProveedor == idProveedor);
-        if (proveedor == null)
-            throw new Exception($"El proveedor con id {idProveedor} no existe.");
+        try
+        {
+            var proveedor = context.Proveedores.SingleOrDefault(x => x.IdProveedor == idProveedor) ?? throw new Exception($"El proveedor con id {idProveedor} no existe.");
+            proveedor.Nombre = proveedorDto.Nombre;
+            proveedor.CUIT = proveedorDto.CUIT;
+            proveedor.Ciudad = proveedorDto.Ciudad;
+            proveedor.Direccion = proveedorDto.Direccion;
+            proveedor.Telefono = proveedorDto.Telefono;
 
-        proveedor.Nombre = proveedorDto.Nombre;
-        proveedor.CUIT = proveedorDto.CUIT;
-        proveedor.Ciudad = proveedorDto.Ciudad;
-        proveedor.Direccion = proveedorDto.Direccion;
-        proveedor.Telefono = proveedorDto.Telefono;
-
-        context.SaveChanges();
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error al actualizar el proveedor.", ex);
+        }
     }
 }
